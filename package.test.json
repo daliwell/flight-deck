@@ -1,0 +1,21 @@
+{
+  "name": "semantic-chunker-tests",
+  "version": "1.0.0",
+  "description": "Test configuration for semantic-chunker",
+  "scripts": {
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:unit": "jest --testPathPattern=tests/unit",
+    "test:integration": "jest --testPathPattern=tests/integration",
+    "test:e2e": "jest --testPathPattern=tests/e2e",
+    "test:api": "jest --testPathPattern=tests/api"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "puppeteer": "^21.6.1",
+    "supertest": "^6.3.3",
+    "mongodb-memory-server": "^9.1.3"
+  }
+}

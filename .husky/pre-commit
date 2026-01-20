@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run all automated tests before commit (unit + frontend + integration + API)
+echo "🧪 Running pre-commit tests (477 tests)..."
+npm run test:unit && npm run test:frontend && npm run test:integration && npm run test:api

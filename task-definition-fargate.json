@@ -1,0 +1,114 @@
+{
+  "family": "semantic-chunker-fargate-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::151853531988:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "semantic-chunker",
+      "image": "151853531988.dkr.ecr.eu-west-1.amazonaws.com/semantic-chunker:latest",
+      "portMappings": [
+        {
+          "containerPort": 3001,
+          "protocol": "tcp"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "PORT",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/PORT"
+        },
+        {
+          "name": "NODE_ENV",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/NODE_ENV"
+        },
+        {
+          "name": "MONGODB_URI_CAN",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/MONGODB_URI_CAN"
+        },
+                {
+          "name": "MONGODB_URI_FAUST",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/MONGODB_URI_FAUST"
+        },
+        {
+          "name": "AZURE_OPENAI_ENDPOINT",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_ENDPOINT"
+        },
+        {
+          "name": "AZURE_OPENAI_API_KEY",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_API_KEY"
+        },
+        {
+          "name": "AZURE_OPENAI_DEPLOYMENT_NAME",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_DEPLOYMENT_NAME"
+        },
+        {
+          "name": "AZURE_INPUT_TOKEN_COST",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_INPUT_TOKEN_COST"
+        },
+        {
+          "name": "AZURE_OUTPUT_TOKEN_COST",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OUTPUT_TOKEN_COST"
+        },
+        {
+          "name": "GOOGLE_CLIENT_ID",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/GOOGLE_CLIENT_ID"
+        },
+        {
+          "name": "GOOGLE_CLIENT_SECRET",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/GOOGLE_CLIENT_SECRET"
+        },
+        {
+          "name": "GOOGLE_CALLBACK_URL",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/GOOGLE_CALLBACK_URL"
+        },
+        {
+          "name": "SESSION_SECRET",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/SESSION_SECRET"
+        },
+        {
+          "name": "AZURE_OPENAI_EMBEDDINGS_ENDPOINT",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_ENDPOINT"
+        },
+        {
+          "name": "AZURE_OPENAI_EMBEDDINGS_API_VERSION",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_API_VERSION"
+        },
+        {
+          "name": "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"
+        },
+        {
+          "name": "AZURE_OPENAI_EMBEDDINGS_3_LARGE_ENDPOINT",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_3_LARGE_ENDPOINT"
+        },
+        {
+          "name": "AZURE_OPENAI_EMBEDDINGS_3_LARGE_API_VERSION",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_3_LARGE_API_VERSION"
+        },
+        {
+          "name": "AZURE_OPENAI_EMBEDDINGS_3_LARGE_DEPLOYMENT_NAME",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_3_LARGE_DEPLOYMENT_NAME"
+        }
+      ],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/semantic-chunker",
+          "awslogs-region": "eu-west-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "node healthcheck.js || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
