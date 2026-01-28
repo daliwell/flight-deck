@@ -6,11 +6,6 @@ const cors = require('cors');
 const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
-
-// Import database connection and services
-const connectDB = require('./src/config/database');
-const AzureOpenAIService = require('./src/services/azureOpenAI');
 
 // Import authentication
 const passport = require('./src/config/passport');
@@ -19,36 +14,29 @@ const { requireSandsMediaAuth } = require('./src/middleware/auth');
 // Import routes
 const apiRoutes = require('./src/routes/api');
 const authRoutes = require('./src/routes/auth');
+const managementRoutes = require('./src/routes/management');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3005;
 
 // Middleware (basic setup)
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Connect to database and start server
+// Start server
 const startServer = async () => {
   try {
-    console.log('Initializing application configuration...');
-    console.log('🏠 Detected local environment - using .env file configuration...');
-    console.log('📄 Using environment variables for configuration');
+    console.log('🚀 Initializing Flight Deck...');
+    console.log('🏠 Environment:', process.env.NODE_ENV || 'development');
     
-    // Initialize Azure OpenAI service
-    const azureOpenAI = new AzureOpenAIService();
-
-    // Session configuration
+    // Session configuration (using memory store for now, can use file-based or Redis if needed)
     app.use(session({
-      secret: process.env.SESSION_SECRET || 'your-secret-key',
+      secret: process.env.SESSION_SECRET || 'flight-deck-secret-key',
       resave: false,
       saveUninitialized: false,
-      store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_URI_CAN,
-        touchAfter: 24 * 3600 // lazy session update
-      }),
       cookie: {
-        secure: false, // Set to true in production with HTTPS
+        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         sameSite: 'lax'
@@ -64,36 +52,21 @@ const startServer = async () => {
 
     // Health check endpoint (unprotected)
     app.get('/health', async (req, res) => {
-      try {
-        // Test Azure OpenAI connection
-        const azureOpenAI = new AzureOpenAIService();
-        const openaiStatus = await azureOpenAI.testConnection();
-        
-        res.json({
-          status: 'ok',
-          timestamp: new Date().toISOString(),
-          services: {
-            database: 'connected',
-            azureOpenAI: openaiStatus ? 'connected' : 'disconnected'
-          },
-          configSource: 'Environment Variables (.env)',
-          environment: 'Local Development',
-          nodeEnv: process.env.NODE_ENV || 'development'
-        });
-      } catch (error) {
-        res.status(500).json({
-          status: 'error',
-          message: error.message,
-          configSource: 'Environment Variables (.env)',
-          environment: 'Local Development'
-        });
-      }
+      res.json({
+        status: 'ok',
+        service: 'flight-deck',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        concordApi: process.env.CONCORD_API_URL || 'https://concord-stage.sandsmedia.com/graphql'
+      });
     });
 
     // Protect all static files and routes with authentication
     // In development mode with SKIP_AUTH=true, bypass authentication
     if (process.env.SKIP_AUTH !== 'true') {
       app.use(requireSandsMediaAuth);
+    } else {
+      console.log('⚠️  Authentication bypassed (SKIP_AUTH=true)');
     }
 
     // Serve static files from public directory (now protected) with no-cache headers
@@ -107,6 +80,9 @@ const startServer = async () => {
 
     // API routes (protected)
     app.use('/api', apiRoutes);
+    
+    // Management routes
+    app.use('/management', managementRoutes);
 
     // Serve main page (protected)
     app.get('/', (req, res) => {
@@ -131,16 +107,14 @@ const startServer = async () => {
       });
     });
     
-    await connectDB();
-    
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Visit http://localhost:${PORT} to view the application`);
-      console.log(`Configuration source: Environment Variables (.env)`);
-      console.log(`Environment: Local Development`);
+      console.log(`✅ Flight Deck server running on port ${PORT}`);
+      console.log(`🌐 Visit http://localhost:${PORT} to view the application`);
+      console.log(`📡 Concord API: ${process.env.CONCORD_API_URL || 'https://concord-stage.sandsmedia.com/graphql'}`);
+      console.log(`🔐 Authentication: ${process.env.SKIP_AUTH === 'true' ? 'DISABLED' : 'ENABLED'}`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 };

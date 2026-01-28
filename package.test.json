@@ -1,7 +1,7 @@
 {
-  "name": "semantic-chunker-tests",
+  "name": "flight-deck-tests",
   "version": "1.0.0",
-  "description": "Test configuration for semantic-chunker",
+  "description": "Test configuration for flight-deck",
   "scripts": {
     "test": "jest --coverage",
     "test:watch": "jest --watch",

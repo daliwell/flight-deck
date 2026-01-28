@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Docker Desktop must be running
-- Navigate to the project directory: /Users/david-work/Developer/semantic-chunker
+- Navigate to the project directory: /Users/david-work/Developer/flight-deck
 
 ## Option 1: Using Docker Compose (Recommended)
 ```bash
@@ -13,7 +13,7 @@ docker-compose up --build -d
 docker-compose ps
 
 # View logs
-docker-compose logs -f semantic-chunker
+docker-compose logs -f flight-deck
 
 # Stop the container
 docker-compose down
@@ -22,24 +22,24 @@ docker-compose down
 ## Option 2: Using Docker directly
 ```bash
 # Build the image
-docker build -t semantic-chunker .
+docker build -t flight-deck .
 
 # Run the container with environment file
 docker run -d \
-  --name semantic-chunker \
+  --name flight-deck \
   -p 3001:3001 \
   --env-file .env \
-  semantic-chunker
+  flight-deck
 
 # Check container status
 docker ps
 
 # View logs
-docker logs -f semantic-chunker
+docker logs -f flight-deck
 
 # Stop and remove container
-docker stop semantic-chunker
-docker rm semantic-chunker
+docker stop flight-deck
+docker rm flight-deck
 ```
 
 ## Accessing the Application

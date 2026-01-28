@@ -6,7 +6,7 @@ const path = require('path');
 const router = express.Router();
 
 // Simple authentication for management endpoints
-const MANAGEMENT_TOKEN = process.env.MANAGEMENT_TOKEN || 'semantic-chunker-management-2024';
+const MANAGEMENT_TOKEN = process.env.MANAGEMENT_TOKEN || 'flight-deck-management-2024';
 
 function requireManagementAuth(req, res, next) {
   const token = req.header('Authorization')?.replace('Bearer ', '') || req.query.token;
@@ -24,13 +24,13 @@ router.post('/update-config', requireManagementAuth, async (req, res) => {
     console.log('Received configuration update request');
     
     // Download and apply the remote update script
-    const scriptUrl = req.body.scriptUrl || 'https://semantic-chunker-remote-update-1760289889.s3.eu-west-1.amazonaws.com/remote-update.sh?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIASGWZNANKILT5XZES%2F20251012%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Date=20251012T172458Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=5cf0abf56f57b7d72808edbd021d197370e913dd54883914b15e5dcfe5cd7503';
+    const scriptUrl = req.body.scriptUrl || 'https://flight-deck-remote-update.s3.eu-west-1.amazonaws.com/remote-update.sh';
     
     const updateCommand = `
       cd /tmp && 
-      curl -L -o semantic-update.sh "${scriptUrl}" && 
-      chmod +x semantic-update.sh && 
-      sudo ./semantic-update.sh > update.log 2>&1 &
+      curl -L -o flight-deck-update.sh "${scriptUrl}" && 
+      chmod +x flight-deck-update.sh && 
+      sudo ./flight-deck-update.sh > update.log 2>&1 &
     `;
     
     exec(updateCommand, (error, stdout, stderr) => {
@@ -88,7 +88,7 @@ router.get('/test-parameter-store', requireManagementAuth, async (req, res) => {
     const client = new SSMClient({ region: 'eu-west-1' });
     
     const command = new GetParameterCommand({
-      Name: '/semantic-chunker/mongodb-uri',
+      Name: '/flight-deck/mongodb-uri',
       WithDecryption: true
     });
     
@@ -112,7 +112,7 @@ router.get('/test-parameter-store', requireManagementAuth, async (req, res) => {
 
 // Restart application endpoint
 router.post('/restart', requireManagementAuth, (req, res) => {
-  exec('pm2 restart semantic-chunker', (error, stdout, stderr) => {
+  exec('pm2 restart flight-deck', (error, stdout, stderr) => {
     if (error) {
       return res.status(500).json({
         success: false,

@@ -28,23 +28,23 @@ docker system prune -f
 docker builder prune -f
 
 echo "🔨 Building Docker image for AMD64 (clean build)..."
-docker build --no-cache --pull --platform linux/amd64 -t semantic-chunker .
+docker build --no-cache --pull --platform linux/amd64 -t flight-deck .
 
 echo "🔐 Logging into AWS ECR..."
 aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 151853531988.dkr.ecr.eu-west-1.amazonaws.com
 
 echo "🏷️  Tagging images..."
-docker tag semantic-chunker:latest 151853531988.dkr.ecr.eu-west-1.amazonaws.com/semantic-chunker:${UNIQUE_TAG}
-docker tag semantic-chunker:latest 151853531988.dkr.ecr.eu-west-1.amazonaws.com/semantic-chunker:latest
+docker tag flight-deck:latest 151853531988.dkr.ecr.eu-west-1.amazonaws.com/flight-deck:${UNIQUE_TAG}
+docker tag flight-deck:latest 151853531988.dkr.ecr.eu-west-1.amazonaws.com/flight-deck:latest
 
 echo "📤 Pushing to ECR..."
-docker push 151853531988.dkr.ecr.eu-west-1.amazonaws.com/semantic-chunker:${UNIQUE_TAG}
-docker push 151853531988.dkr.ecr.eu-west-1.amazonaws.com/semantic-chunker:latest
+docker push 151853531988.dkr.ecr.eu-west-1.amazonaws.com/flight-deck:${UNIQUE_TAG}
+docker push 151853531988.dkr.ecr.eu-west-1.amazonaws.com/flight-deck:latest
 
 echo "🔄 Forcing ECS service update with new deployment..."
 aws ecs update-service \
-    --cluster semantic-chunker-cluster \
-    --service semantic-chunker-fargate-service \
+    --cluster flight-deck-cluster \
+    --service flight-deck-fargate-service \
     --force-new-deployment \
     --no-paginate \
     --output table \
@@ -52,12 +52,12 @@ aws ecs update-service \
 
 echo ""
 echo "✅ Production deployment initiated!"
-echo "🌐 Application will be available at: https://chunker.sandsmedia.com"
+echo "🌐 Application will be available at: https://flightdeck.sandsmedia.com"
 echo "📦 Deployed version: ${UNIQUE_TAG}"
 echo "⏳ Deployment may take a few minutes to complete..."
 echo ""
 echo "🔍 To monitor deployment progress:"
-echo "   aws ecs describe-services --cluster semantic-chunker-cluster --services semantic-chunker-fargate-service --query 'services[0].deployments[0].rolloutState' --output text --no-paginate"
+echo "   aws ecs describe-services --cluster flight-deck-cluster --services flight-deck-fargate-service --query 'services[0].deployments[0].rolloutState' --output text --no-paginate"
 echo ""
 echo "🏥 To check application health:"
-echo "   curl https://chunker.sandsmedia.com/health"
+echo "   curl https://flightdeck.sandsmedia.com/health"

@@ -1,13 +1,12 @@
 version: '3.8'
 
 services:
-  semantic-chunker:
+  flight-deck:
     build: .
     ports:
-      - "3001:3001"
+      - "3005:3005"
     environment:
       - NODE_ENV=production
-      - PORT=3001
       - SKIP_AUTH=true
     env_file:
       - .env

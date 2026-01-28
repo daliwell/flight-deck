@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the comprehensive testing strategy for the Semantic Chunker application.
+This document describes the comprehensive testing strategy for the Flight Deck application.
 
 ## Setup
 
@@ -12,7 +12,7 @@ When you clone the repository and run `npm install`, pre-commit hooks are **auto
 
 ```bash
 git clone <repo-url>
-cd semantic-chunker
+cd flight-deck
 npm install  # Automatically sets up pre-commit hooks via Husky
 ```
 

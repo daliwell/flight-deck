@@ -22,4 +22,4 @@ echo "▶️  Starting containers..."
 docker-compose up -d
 
 echo "✅ Local deployment complete!"
-echo "🌐 Application available at: http://localhost:3001"
+echo "🌐 Application available at: http://localhost:3005"

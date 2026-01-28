@@ -14,7 +14,7 @@ router.get('/login', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Login - Semantic Chunker</title>
+            <title>Login - Flight Deck</title>
             <style>
                 body {
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -76,8 +76,8 @@ router.get('/login', (req, res) => {
         </head>
         <body>
             <div class="login-container">
-                <div class="logo">🧩 Semantic Chunker</div>
-                <div class="subtitle">Chunk Audit POC Management</div>
+                <div class="logo">✈️ Flight Deck</div>
+                <div class="subtitle">Conference Management Platform</div>
                 
                 <a href="/auth/google" class="google-btn">
                     <svg class="google-icon" viewBox="0 0 24 24">

@@ -1,5 +1,5 @@
 {
-  "family": "semantic-chunker-fargate-task",
+  "family": "flight-deck-fargate-task",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
@@ -7,97 +7,69 @@
   "executionRoleArn": "arn:aws:iam::151853531988:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
-      "name": "semantic-chunker",
-      "image": "151853531988.dkr.ecr.eu-west-1.amazonaws.com/semantic-chunker:latest",
+      "name": "flight-deck",
+      "image": "151853531988.dkr.ecr.eu-west-1.amazonaws.com/flight-deck:latest",
       "portMappings": [
         {
-          "containerPort": 3001,
+          "containerPort": 3005,
           "protocol": "tcp"
         }
       ],
       "secrets": [
         {
           "name": "PORT",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/PORT"
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/PORT"
         },
         {
           "name": "NODE_ENV",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/NODE_ENV"
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/NODE_ENV"
         },
         {
-          "name": "MONGODB_URI_CAN",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/MONGODB_URI_CAN"
-        },
-                {
-          "name": "MONGODB_URI_FAUST",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/MONGODB_URI_FAUST"
-        },
-        {
-          "name": "AZURE_OPENAI_ENDPOINT",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_ENDPOINT"
-        },
-        {
-          "name": "AZURE_OPENAI_API_KEY",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_API_KEY"
-        },
-        {
-          "name": "AZURE_OPENAI_DEPLOYMENT_NAME",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_DEPLOYMENT_NAME"
-        },
-        {
-          "name": "AZURE_INPUT_TOKEN_COST",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_INPUT_TOKEN_COST"
-        },
-        {
-          "name": "AZURE_OUTPUT_TOKEN_COST",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OUTPUT_TOKEN_COST"
+          "name": "API_ENV",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/API_ENV"
         },
         {
           "name": "GOOGLE_CLIENT_ID",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/GOOGLE_CLIENT_ID"
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/GOOGLE_CLIENT_ID"
         },
         {
           "name": "GOOGLE_CLIENT_SECRET",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/GOOGLE_CLIENT_SECRET"
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/GOOGLE_CLIENT_SECRET"
         },
         {
           "name": "GOOGLE_CALLBACK_URL",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/GOOGLE_CALLBACK_URL"
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/GOOGLE_CALLBACK_URL"
         },
         {
           "name": "SESSION_SECRET",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/SESSION_SECRET"
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/SESSION_SECRET"
         },
         {
-          "name": "AZURE_OPENAI_EMBEDDINGS_ENDPOINT",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_ENDPOINT"
+          "name": "CONCORD_STAGE_TOKEN",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/CONCORD_STAGE_TOKEN"
         },
         {
-          "name": "AZURE_OPENAI_EMBEDDINGS_API_VERSION",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_API_VERSION"
+          "name": "CONCORD_PROD_TOKEN",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/CONCORD_PROD_TOKEN"
         },
         {
-          "name": "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT_NAME"
+          "name": "CAN_STAGE_TOKEN",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/CAN_STAGE_TOKEN"
         },
         {
-          "name": "AZURE_OPENAI_EMBEDDINGS_3_LARGE_ENDPOINT",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_3_LARGE_ENDPOINT"
+          "name": "CAN_PROD_TOKEN",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/CAN_PROD_TOKEN"
         },
         {
-          "name": "AZURE_OPENAI_EMBEDDINGS_3_LARGE_API_VERSION",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_3_LARGE_API_VERSION"
-        },
-        {
-          "name": "AZURE_OPENAI_EMBEDDINGS_3_LARGE_DEPLOYMENT_NAME",
-          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/semantic-chunker/prod/AZURE_OPENAI_EMBEDDINGS_3_LARGE_DEPLOYMENT_NAME"
+          "name": "MANAGEMENT_TOKEN",
+          "valueFrom": "arn:aws:ssm:eu-west-1:151853531988:parameter/flight-deck/prod/MANAGEMENT_TOKEN"
         }
       ],
       "essential": true,
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/semantic-chunker",
+          "awslogs-group": "/ecs/flight-deck",
           "awslogs-region": "eu-west-1",
           "awslogs-stream-prefix": "ecs"
         }

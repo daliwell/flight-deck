@@ -1,8 +1,8 @@
-# Semantic Chunker - Docker Deployment
+# Flight Deck - Docker Deployment
 
 ## Overview
 
-This document describes how to run the Semantic Chunker application using Docker.
+This document describes how to run the Flight Deck application using Docker.
 
 ## Prerequisites
 

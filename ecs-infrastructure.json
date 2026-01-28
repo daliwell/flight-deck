@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "ECS cluster with single t2.small instance for semantic-chunker",
+  "Description": "ECS cluster with single t2.small instance for flight-deck",
   "Resources": {
     "ECSInstanceRole": {
       "Type": "AWS::IAM::Role",
@@ -64,7 +64,7 @@
     "ECSLaunchTemplate": {
       "Type": "AWS::EC2::LaunchTemplate",
       "Properties": {
-        "LaunchTemplateName": "semantic-chunker-ecs-template",
+        "LaunchTemplateName": "flight-deck-ecs-template",
         "LaunchTemplateData": {
           "ImageId": "ami-0c84efbfa26ac0cd5",
           "InstanceType": "t2.small",
@@ -86,7 +86,7 @@
     "ECSAutoScalingGroup": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "AutoScalingGroupName": "semantic-chunker-asg",
+        "AutoScalingGroupName": "flight-deck-asg",
         "VPCZoneIdentifier": ["subnet-066d347c9a11298d2"],
         "LaunchTemplate": {
           "LaunchTemplateId": {"Ref": "ECSLaunchTemplate"},
@@ -98,7 +98,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "semantic-chunker-ecs-instance",
+            "Value": "flight-deck-ecs-instance",
             "PropagateAtLaunch": true
           }
         ]
@@ -107,7 +107,7 @@
     "ECSCapacityProvider": {
       "Type": "AWS::ECS::CapacityProvider",
       "Properties": {
-        "Name": "semantic-chunker-capacity-provider",
+        "Name": "flight-deck-capacity-provider",
         "AutoScalingGroupProvider": {
           "AutoScalingGroupArn": {"Ref": "ECSAutoScalingGroup"},
           "ManagedScaling": {

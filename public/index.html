@@ -3,547 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Semantic Chunker - Chunk Audit POCs</title>
-    <link rel="stylesheet" href="styles.css?v=2.3">
+    <title>Flight Deck - Badge Printing</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Chunker Screen (current app) -->
-        <div id="chunkerScreen" class="screen active">
-        <div class="user-header">
-            <div class="app-mode">
-                <button id="ragScreenButton" class="app-mode-btn">RAG</button>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1>✈️ Flight Deck</h1>
+                <span class="subtitle">Badge Printing & Attendee Management</span>
             </div>
-            <div class="user-info">
-                <span id="userWelcome">Loading user...</span>
-            </div>
-            <div class="user-actions">
-                <button id="createChunksButton" class="create-chunks-btn">Create Chunks for POCs</button>
-                <button id="assessQualityButton" class="assess-quality-btn">Assess Chunks of POCs</button>
-                <button id="exportReportsButton" class="export-reports-btn">Export Quality Reports</button>
-                <button id="logoutButton" class="logout-btn">Logout</button>
-            </div>
-        </div>
-        
-        <header>
-            <div class="chunker-header">
-                <h1>Semantic Chunker</h1>
-                <a href="/api/docs/HOW_CHUNKING_WORKS.md" target="_blank" class="chunker-help-link" title="Learn how chunking works">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M10 14V10M10 6H10.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                    How it works
-                </a>
-            </div>
-            <div class="top-controls">
-                <div class="search-container">
-                    <input type="text" id="searchInput" placeholder="Search all fields..." />
-                    <button id="searchButton">Search</button>
-                    <button id="clearSearch">Clear</button>
-                </div>
-                
-                <div class="filter-toggle-container">
-                    <button id="filterToggleBtn" class="filter-toggle-btn">
-                        <span>Filters</span>
-                        <span class="filter-arrow">▼</span>
-                    </button>
-                </div>
-            </div>
-            
-            <div id="filterPanel" class="filter-panel hidden">
-                <div class="filter-section">
-                    <label>Content Types</label>
-                    <div class="button-group">
-                        <div id="contentTypeButtons" style="display: contents;">
-                            <div style="padding: 10px; color: #666; font-style: italic;">Loading content types...</div>
-                        </div>
-                        <div class="filter-divider"></div>
-                        <button id="selectAllContentTypes" class="filter-btn secondary">Select All</button>
-                        <button id="deselectAllContentTypes" class="filter-btn secondary">Deselect All</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bottom-controls">
-                <div class="selection-controls">
-                    <button id="selectAllGlobal">Select All</button>
-                    <button id="selectAllPage">Select All On Page</button>
-                    <button id="deselectAll">Deselect All</button>
-                    <span id="selectedCount">0 selected</span>
-                </div>
-                <div class="pagination-info">
-                    <span id="paginationInfo">Loading...</span>
-                </div>
+            <div class="header-right">
+                <span id="userInfo" class="user-info">Loading...</span>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
             </div>
         </header>
 
-        <div class="content-area">
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Loading data...</p>
-            </div>
-
-            <div class="error" id="error" style="display: none;">
-                <p id="errorMessage"></p>
-                <button onclick="location.reload()">Retry</button>
-            </div>
-
-            <div class="poc-list" id="pocList">
-                <!-- POC items will be dynamically inserted here -->
-            </div>
-
-            <div class="pagination" id="pagination">
-                <button id="prevPage" disabled>Previous</button>
-                <span id="pageInfo">Page 1 of 1</span>
-                <button id="nextPage" disabled>Next</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chunk View Modal -->
-    <div class="modal-overlay" id="chunkModal" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2 id="modalTitle">POC Chunks View</h2>
-                <button class="close-button" id="closeModal">&times;</button>
-            </div>
-            <div class="poc-metadata-header" id="pocMetadataHeader" style="display: none;">
-                <!-- POC metadata will be inserted here -->
-            </div>
-            <div class="modal-content">
-                <div class="split-view">
-                    <div class="left-panel">
-                        <h3>POC Text</h3>
-                        <div class="poc-text-content" id="pocTextContent">
-                            Loading POC text...
-                        </div>
-                    </div>
-                    <div class="right-panel">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3 id="chunksTitle" style="margin: 0 0 15px 0; color: #2c3e50; font-size: 16px; font-weight: 600; padding-bottom: 10px; border-bottom: 2px solid #e9ecef; flex: 1;">Chunks</h3>
-                            <button id="toggleAllChunks" style="display: none; background: none; border: none; cursor: pointer; padding: 0; margin: 0 0 15px 10px;">
-                                <span class="filter-arrow" style="font-size: 1.2em;">▼</span>
-                            </button>
-                        </div>
-                        <div class="chunks-content" id="chunksContent">
-                            Loading chunks...
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chunker View Modal -->
-    <div class="modal-overlay" id="chunkerModal" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2 id="chunkerModalTitle">Chunker View</h2>
-                <button class="close-button" id="closeChunkerModal">&times;</button>
-            </div>
-            <div class="poc-metadata-header" id="chunkerPocMetadataHeader" style="display: none;">
-                <!-- POC metadata will be inserted here -->
-            </div>
-            <div class="modal-content">
-                <div class="split-view">
-                    <div class="left-panel">
-                        <!-- Left side empty for now as requested -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <h3 style="margin: 0; padding-bottom: 0; border-bottom: none;">Details</h3>
-                            <button id="chunkerHtmlToggle" style="background: #f0f2f5; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; display: none;">Show HTML Text</button>
-                        </div>
-                        <div class="chunker-details-content" id="chunkerDetailsContent">
-                            <!-- Reserved for future use -->
-                        </div>
-                    </div>
-                    <div class="right-panel">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3 id="chunkerChunksTitle" style="margin: 0 0 15px 0; color: #2c3e50; font-size: 16px; font-weight: 600; padding-bottom: 10px; border-bottom: 2px solid #e9ecef; flex: 1;">Chunks</h3>
-                            <button id="toggleAllChunkerChunks" style="display: none; background: none; border: none; cursor: pointer; padding: 0; margin: 0 0 15px 10px;">
-                                <span class="filter-arrow" style="font-size: 1.2em;">▼</span>
-                            </button>
-                        </div>
-                        <div class="chunks-content" id="chunkerChunksContent">
-                            Loading chunks...
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Assessment Modal -->
-    <div class="modal-overlay" id="assessmentModal" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2 id="assessmentModalTitle">Assessment View</h2>
-                <button class="close-button" id="closeAssessmentModal">&times;</button>
-            </div>
-            <div class="poc-metadata-header" id="assessmentPocMetadataHeader" style="display: none;">
-                <!-- POC metadata will be inserted here -->
-            </div>
-            <div class="modal-content">
-                <div class="split-view">
-                    <div class="left-panel">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <h3 style="margin: 0; padding-bottom: 0; border-bottom: none;">POC Text</h3>
-                            <button id="assessmentHtmlToggle" style="background: #f0f2f5; border: 1px solid #dee2e6; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; display: none;">Show HTML Text</button>
-                        </div>
-                        <div class="poc-text-content" id="assessmentPocTextContent">
-                            Loading POC text...
-                        </div>
-                    </div>
-                    <div class="right-panel">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3 id="assessmentChunksTitle" style="margin: 0 0 15px 0; color: #2c3e50; font-size: 16px; font-weight: 600; padding-bottom: 10px; border-bottom: 2px solid #e9ecef; flex: 1;">Chunks</h3>
-                            <button id="toggleAllAssessmentChunks" style="display: none; background: none; border: none; cursor: pointer; padding: 0; margin: 0 0 15px 10px;">
-                                <span class="filter-arrow" style="font-size: 1.2em;">▼</span>
-                            </button>
-                        </div>
-                        <div class="chunks-content" id="assessmentChunksContent">
-                            Loading chunks...
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- POC View Modal -->
-    <div class="modal-overlay" id="pocViewModal" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2 id="pocViewModalTitle">POC View</h2>
-                <button class="close-button" id="closePocViewModal">&times;</button>
-            </div>
-            <div class="modal-content">
-                <div class="poc-view-content" id="pocViewContent">
-                    Loading...
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quality Assessment Setup Modal -->
-    <div id="assessmentMethodModal" class="modal-overlay" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2>Quality Assessment Setup</h2>
-                <span class="close" id="closeMethodModal">&times;</span>
-            </div>
-            <div class="modal-content">
-                <div class="assessment-setup-content">
-                    <p class="setup-info">Configure your quality assessment by selecting the assessment method and which chunker's results to evaluate for your <span id="setupSelectedPocsCount">0</span> selected POCs.</p>
-                    
-                    <!-- Assessment Method Selection -->
-                    <div class="setup-section">
-                        <h3>1. Choose Assessment Method</h3>
-                        <p class="section-info">Select the quality assessment algorithm to use for evaluation.</p>
-                        <div class="method-grid" id="methodGrid">
-                            <!-- Assessment methods will be loaded dynamically -->
-                        </div>
-                    </div>
-                    
-                    <!-- Chunker Selection -->
-                    <div class="setup-section">
-                        <h3>2. Choose Chunker</h3>
-                        <p class="section-info">Select which chunker's results to assess for quality. These are the chunkers that have already processed your selected POCs.</p>
-                        <div class="chunker-grid" id="setupChunkerGrid">
-                            <!-- Chunkers will be loaded dynamically -->
-                        </div>
-                    </div>
-                    
-                    <div class="setup-actions">
-                        <button id="startQualityAssessmentButton" class="primary-btn" disabled>Start Quality Assessment</button>
-                        <button id="cancelMethodButton" class="secondary-btn">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quality Assessment Modal -->
-    <div class="modal-overlay" id="qualityAssessmentModal" style="display: none;">
-        <div class="modal-container quality-assessment-modal">
-            <div class="modal-header">
-                <h2 id="qualityModalTitle">Assess Chunk Quality</h2>
-                <button class="close-button" id="closeQualityModal">&times;</button>
-            </div>
-            <div class="modal-content">
-                <div class="assessment-content">
-                    <div class="assessment-progress" id="assessmentProgressSection">
-                        <h3>Quality Assessment in Progress</h3>
-                        <div class="progress-info">
-                            <p>Status: <span id="currentPocName">Loading...</span></p>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="assessmentProgressBar"></div>
-                            </div>
-                            <div class="progress-text">
-                                <span>Progress: </span>
-                                <span id="assessmentProgressText">0%</span>
-                            </div>
-                            <div class="progress-details" id="progressDetails" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 14px; line-height: 1.4;">
-                                <div id="progressStats">Initializing assessment...</div>
-                                <div id="progressEstimate" style="color: #666; margin-top: 5px;"></div>
-                            </div>
-                        </div>
-                        <button id="cancelProgressButton" class="secondary-btn">Cancel Assessment</button>
-                    </div>
-                    
-                    <div class="assessment-results" id="assessmentResultsSection" style="display: none;">
-                        <h3>Quality Assessment Complete</h3>
-                        <div class="results-summary">
-                            <div class="summary-stats">
-                                <div class="stat-item">
-                                    <span class="stat-label">Total POCs:</span>
-                                    <span class="stat-value" id="totalPocsAssessed">0</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Total Chunks:</span>
-                                    <span class="stat-value" id="totalChunksAssessed">0</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Average Quality:</span>
-                                    <span class="stat-value" id="averageQualityScore">0.00</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Chunker Used:</span>
-                                    <span class="stat-value" id="chunkerTypeUsed">N/A</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Assessment Method:</span>
-                                    <span class="stat-value" id="assessmentMethodUsed">N/A</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="results-details">
-                            <h4>Detailed Results</h4>
-                            <table class="results-table">
-                                <thead>
-                                    <tr>
-                                        <th>POC Name</th>
-                                        <th>Chunks</th>
-                                        <th>Quality Score</th>
-                                        <th>Time (ms)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="assessmentResultsBody">
-                                    <!-- Results will be populated here -->
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="results-actions">
-                            <button id="closeResultsButton" class="primary-btn">Close</button>
-                            <button id="exportResultsButton" class="secondary-btn">Export Results</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chunk Creation Setup Modal -->
-    <div id="chunkCreationSetupModal" class="modal-overlay" style="display: none;">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2>Chunk Creation Setup</h2>
-                <span class="close" id="closeChunkCreationSetupModal">&times;</span>
-            </div>
-            <div class="modal-content">
-                <div class="chunk-creation-setup-content">
-                    <p class="setup-info">Configure chunk creation for your <span id="chunkCreationSelectedPocsCount">0</span> selected POCs.</p>
-                    
-                    <!-- POC Content Type Summary -->
-                    <div class="setup-section">
-                        <h3>Selected POCs Summary</h3>
-                        <div class="poc-summary" id="pocContentTypeSummary">
-                            <!-- POC content type breakdown will be shown here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Chunker Selection -->
-                    <div class="setup-section">
-                        <h3>Choose Chunker</h3>
-                        <p class="section-info">Select which chunker to use for creating chunks from your selected POCs.</p>
-                        <div class="chunker-grid" id="chunkCreationChunkerGrid">
-                            <!-- Available chunkers will be loaded dynamically -->
-                        </div>
-                    </div>
-                    
-                    <div class="setup-actions">
-                        <button id="startChunkCreationButton" class="primary-btn" disabled>Start Chunk Creation</button>
-                        <button id="cancelChunkCreationButton" class="secondary-btn">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chunk Creation Progress Modal -->
-    <div class="modal-overlay" id="chunkCreationProgressModal" style="display: none;">
-        <div class="modal-container chunk-creation-modal">
-            <div class="modal-header">
-                <h2 id="chunkCreationModalTitle">Create Chunks</h2>
-                <button class="close-button" id="closeChunkCreationModal">&times;</button>
-            </div>
-            <div class="modal-content">
-                <div class="chunk-creation-content">
-                    <div class="chunk-creation-progress" id="chunkCreationProgressSection">
-                        <h3>Chunk Creation in Progress</h3>
-                        <div class="progress-info">
-                            <p>POC Progress: <span id="pocProgressInfo" style="font-weight: bold;">—</span></p>
-                            <p>Status: <span id="currentChunkCreationPocName">Loading...</span></p>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="chunkCreationProgressBar"></div>
-                            </div>
-                            <div class="progress-text">
-                                <span>Progress: </span>
-                                <span id="chunkCreationProgressText">0%</span>
-                            </div>
-                        </div>
-                        <button id="cancelChunkCreationProgressButton" class="secondary-btn">Cancel Creation</button>
-                    </div>
-                    
-                    <div class="chunk-creation-results" id="chunkCreationResultsSection" style="display: none;">
-                        <h3>Chunk Creation Complete</h3>
-                        <div class="results-summary">
-                            <div class="summary-stats">
-                                <div class="stat-item">
-                                    <span class="stat-label">Total POCs Processed:</span>
-                                    <span class="stat-value" id="totalPocsProcessed">0</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Total Chunks Created:</span>
-                                    <span class="stat-value" id="totalChunksCreated">0</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Successful:</span>
-                                    <span class="stat-value" id="successfulPocs">0</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Failed:</span>
-                                    <span class="stat-value" id="failedPocs">0</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Chunker Used:</span>
-                                    <span class="stat-value" id="chunkerTypeUsedForCreation">N/A</span>
-                                </div>
-                                <div class="stat-item" id="costDisplayContainer" style="display: none;">
-                                    <span class="stat-label">Total Cost:</span>
-                                    <span class="stat-value" id="chunkCreationCostDisplay">$0.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="results-details">
-                            <h4>Detailed Results</h4>
-                            <table class="results-table">
-                                <thead>
-                                    <tr>
-                                        <th>POC Name</th>
-                                        <th>Content Type</th>
-                                        <th>Chunks Created</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="chunkCreationResultsBody">
-                                    <!-- Results will be populated here -->
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="results-actions">
-                            <button id="closeChunkCreationResultsButton" class="primary-btn">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        </div>
-        <!-- End Chunker Screen -->
-        
-        <!-- RAG Screen -->
-        <div id="ragScreen" class="screen">
-            <div class="user-header">
-                <div class="app-mode">
-                    <button id="chunkerScreenButton" class="app-mode-btn">Chunker</button>
-                </div>
-                <div class="user-info">
-                    <span id="userWelcome2">Loading user...</span>
-                </div>
-                <div class="user-actions">
-                    <button id="logoutButton2" class="logout-btn">Logout</button>
-                </div>
-            </div>
-            
-            <header class="rag-header">
-                <div class="rag-title-row">
-                    <h1>RAG Search</h1>
-                    <a href="/api/docs/HOW_RAG_RETRIEVAL_WORKS.md" target="_blank" class="rag-help-link" title="Learn how RAG retrieval works">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M10 14V10M10 6H10.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                        How it works
-                    </a>
-                </div>
-                <div class="rag-controls">
-                    <div class="question-container">
-                        <input type="text" id="ragQuestionInput" placeholder="Ask a question..." />
-                    </div>
-                    <div class="chunker-filter-container">
-                        <select id="ragChunkerSelect" class="chunker-select">
-                            <option value="DEFAULT-1024T">DEFAULT-1024T</option>
-                            <option value="READ-CONTENT-PARA">READ-CONTENT-PARA</option>
-                            <option value="READ-CONTENT-PARA-LLM">READ-CONTENT-PARA-LLM</option>
-                            <option value="READ-CONTENT-SHORT">READ-CONTENT-SHORT</option>
-                            <option value="READ-CONTENT-SHORT-LLM">READ-CONTENT-SHORT-LLM</option>
-                        </select>
-                    </div>
-                    <div class="page-size-container" id="pageSizeContainer" style="display: none;">
-                        <label for="ragPageSizeInput" class="page-size-label">Page Size:</label>
-                        <input type="number" id="ragPageSizeInput" class="page-size-input" min="1" max="500" placeholder="Auto" title="Override default page size limit (leave empty for auto)">
-                    </div>
-                    <div class="audited-pocs-toggle-container" id="auditedPocsToggleContainer" style="display: none;">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="ragAuditedPocsToggle" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                        <span class="toggle-label">Audited POCs Only</span>
-                    </div>
-                    <div class="llm-answer-toggle-container">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="ragLLMToggle">
-                            <span class="toggle-slider"></span>
-                        </label>
-                        <span class="toggle-label" title="Generate AI-powered answer using Azure OpenAI">
-                            🤖 AI Answer
-                        </span>
-                    </div>
-                    <button id="ragSubmitButton" class="rag-submit-btn">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 16L10 4M10 4L6 8M10 4L14 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+        <!-- Event Selection Screen -->
+        <div id="eventSelectionScreen" class="screen active">
+            <div class="screen-content">
+                <h2>Select Event</h2>
+                <p class="instructions">Choose the event you're currently working at</p>
+                
+                <div class="controls">
+                    <button id="refreshEventsBtn" class="btn btn-primary">
+                        <span class="btn-icon">🔄</span> Refresh Events
                     </button>
-                    <button id="ragDownloadCSVButton" class="rag-download-csv-btn" style="display: none;" title="Download search results as CSV">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 3V13M10 13L6 9M10 13L14 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M3 17H17" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        CSV
+                    <select id="genreFilter" class="filter-select">
+                        <option value="RHEINGOLD">Rheingold Conferences</option>
+                        <option value="CAMP">Camps</option>
+                        <option value="FLEX_CAMP">Flex Camps</option>
+                        <option value="ALL">All Types</option>
+                    </select>
+                </div>
+
+                <div id="eventsLoading" class="loading-state" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Loading events...</p>
+                </div>
+
+                <div id="eventsError" class="error-state" style="display: none;"></div>
+
+                <div id="eventsList" class="events-list"></div>
+            </div>
+        </div>
+
+        <!-- Attendee Management Screen -->
+        <div id="attendeeScreen" class="screen">
+            <div class="screen-content">
+                <div class="attendee-header">
+                    <button id="backToEventsBtn" class="btn btn-secondary">
+                        <span class="btn-icon">←</span> Back to Events
+                    </button>
+                    <div class="current-event-info">
+                        <h2 id="currentEventName"></h2>
+                        <p id="currentEventDetails"></p>
+                    </div>
+                    <button id="syncAttendeesBtn" class="btn btn-primary">
+                        <span class="btn-icon">🔄</span> Sync Attendees
                     </button>
                 </div>
-            </header>
 
-            <div class="rag-content-area">
-                <div class="chunks-list" id="ragChunksList">
-                    <!-- Chunks will be displayed here -->
+                <div class="search-section">
+                    <div class="search-tabs">
+                        <button class="tab-btn active" data-tab="search">
+                            <span class="tab-icon">🔍</span> Search
+                        </button>
+                        <button class="tab-btn" data-tab="scan">
+                            <span class="tab-icon">📷</span> Scan QR Code
+                        </button>
+                    </div>
+
+                    <!-- Search Tab -->
+                    <div id="searchTab" class="tab-content active">
+                        <div class="search-box">
+                            <input 
+                                type="text" 
+                                id="attendeeSearch" 
+                                placeholder="Search by name or badge number..." 
+                                autocomplete="off"
+                            />
+                            <button id="clearSearchBtn" class="clear-btn" style="display: none;">✕</button>
+                        </div>
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+
+                    <!-- Scan Tab -->
+                    <div id="scanTab" class="tab-content">
+                        <div class="scan-container">
+                            <div id="qrScanner" class="qr-scanner">
+                                <video id="qrVideo" class="qr-video"></video>
+                                <div class="scan-overlay">
+                                    <div class="scan-frame"></div>
+                                </div>
+                            </div>
+                            <button id="startScanBtn" class="btn btn-primary btn-large">
+                                <span class="btn-icon">📷</span> Start Scanner
+                            </button>
+                            <button id="stopScanBtn" class="btn btn-secondary btn-large" style="display: none;">
+                                <span class="btn-icon">⏹</span> Stop Scanner
+                            </button>
+                            <p class="scan-instructions">Position the QR code within the frame</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="attendeeDetails" class="attendee-details" style="display: none;">
+                    <!-- Attendee details will be dynamically inserted here -->
+                </div>
+
+                <div id="syncStatus" class="sync-status"></div>
+            </div>
+        </div>
+
+        <!-- Badge Print Modal -->
+        <div id="printModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Print Badge</h3>
+                    <button class="modal-close" onclick="flightDeckApp.closePrintModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div id="badgePreview" class="badge-preview"></div>
+                    <div class="print-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="testPrintCheckbox" />
+                            <span>Test Print (don't mark as printed)</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="flightDeckApp.closePrintModal()">Cancel</button>
+                    <button id="confirmPrintBtn" class="btn btn-primary btn-large">
+                        <span class="btn-icon">🖨️</span> Print Badge
+                    </button>
                 </div>
             </div>
         </div>
-        <!-- End RAG Screen -->
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="script.js?v=2.1"></script>
+    <!-- Load database service first -->
+    <script src="services/db.js"></script>
+    <!-- Load main application -->
+    <script src="script.js"></script>
 </body>
 </html>
