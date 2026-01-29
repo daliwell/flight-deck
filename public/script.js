@@ -92,7 +92,7 @@ class FlightDeckApp {
         const userInfoEl = document.getElementById('userInfo');
         if (userInfoEl && user) {
           // Display in format: "Welcome, Name" with email below
-          userInfoEl.innerHTML = `👋 Welcome, <strong>${user.name || 'User'}</strong><br><small>${user.email}</small>`;
+          userInfoEl.innerHTML = `<strong>👋 Welcome, ${user.name || 'User'}</strong><br><small>${user.email}</small>`;
         }
       }
     } catch (error) {

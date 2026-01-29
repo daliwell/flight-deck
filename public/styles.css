@@ -56,7 +56,7 @@ body {
 
 .header-right {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 1rem;
 }
 
@@ -65,9 +65,11 @@ body {
   border: none;
   color: #fff;
   cursor: pointer;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   transition: background-color 0.2s;
   border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .user-info-btn:hover {
@@ -78,6 +80,10 @@ body {
   font-size: 0.9rem;
   line-height: 1.4;
   text-align: left;
+}
+
+.user-info strong {
+  white-space: nowrap;
 }
 
 .user-info small {
