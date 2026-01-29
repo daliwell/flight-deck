@@ -85,10 +85,12 @@ class FlightDeckApp {
     try {
       const response = await fetch('/auth/user');
       if (response.ok) {
-        const user = await response.json();
+        const data = await response.json();
+        const user = data.user;
         const userInfoEl = document.getElementById('userInfo');
-        if (userInfoEl) {
-          userInfoEl.textContent = `${user.firstName || user.email}`;
+        if (userInfoEl && user) {
+          // Display in format: "Welcome, Name" with email below
+          userInfoEl.innerHTML = `👋 Welcome, <strong>${user.name || 'User'}</strong><br><small>${user.email}</small>`;
         }
       }
     } catch (error) {

@@ -47,6 +47,14 @@ body {
 
 .user-info {
   font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.user-info small {
+  opacity: 0.8;
+  font-size: 0.85em;
+  display: block;
 }
 
 /* Buttons */
