@@ -74,66 +74,82 @@ echo "⏳ Monitoring deployment progress..."
 echo ""
 
 # Monitor deployment until healthy
-MAX_WAIT=600  # 10 minutes
+MAX_WAIT=1200  # 20 minutes
 INTERVAL=10
 ELAPSED=0
+LAST_STATE=""
 
 while [ $ELAPSED -lt $MAX_WAIT ]; do
-    # Get the task ARN for the new deployment
-    TASK_ARN=$(aws ecs list-tasks \
+    # Get ALL tasks to find the one with our new revision
+    ALL_TASKS=$(aws ecs list-tasks \
         --cluster flight-deck-cluster \
         --service-name flight-deck-fargate-service \
-        --desired-status RUNNING \
         --region eu-west-1 \
-        --query 'taskArns[0]' \
+        --query 'taskArns' \
         --output text \
         --no-paginate 2>/dev/null)
     
-    if [ -n "$TASK_ARN" ] && [ "$TASK_ARN" != "None" ]; then
-        # Get task details
-        TASK_INFO=$(aws ecs describe-tasks \
-            --cluster flight-deck-cluster \
-            --tasks "$TASK_ARN" \
-            --region eu-west-1 \
-            --query 'tasks[0].{status:lastStatus,health:healthStatus,revision:taskDefinitionArn}' \
-            --output json \
-            --no-paginate 2>/dev/null)
-        
-        TASK_STATUS=$(echo "$TASK_INFO" | grep -o '"status": *"[^"]*"' | cut -d'"' -f4)
-        HEALTH_STATUS=$(echo "$TASK_INFO" | grep -o '"health": *"[^"]*"' | cut -d'"' -f4)
-        TASK_REV=$(echo "$TASK_INFO" | grep -o 'flight-deck-fargate-task:[0-9]*' | cut -d: -f2)
-        
-        echo "   Status: $TASK_STATUS | Health: $HEALTH_STATUS | Revision: $TASK_REV"
-        
-        # Check if it's the correct revision and healthy
-        if [ "$TASK_REV" = "$NEW_REVISION" ] && [ "$TASK_STATUS" = "RUNNING" ] && [ "$HEALTH_STATUS" = "HEALTHY" ]; then
-            echo ""
-            echo "✅ Deployment is LIVE and HEALTHY!"
-            echo "🌐 https://flightdeck.sandsmedia.com"
+    if [ -n "$ALL_TASKS" ]; then
+        # Check each task to find the new revision
+        NEW_REV_FOUND=false
+        for TASK_ARN in $ALL_TASKS; do
+            TASK_INFO=$(aws ecs describe-tasks \
+                --cluster flight-deck-cluster \
+                --tasks "$TASK_ARN" \
+                --region eu-west-1 \
+                --query 'tasks[0].{status:lastStatus,health:healthStatus,revision:taskDefinitionArn}' \
+                --output json \
+                --no-paginate 2>/dev/null)
             
-            # macOS notification
-            if command -v osascript &> /dev/null; then
-                osascript -e "display notification \"Flight Deck is live and healthy at flightdeck.sandsmedia.com\" with title \"Deployment Complete ✅\" sound name \"Glass\""
-                say "Flight Deck deployment is complete and healthy"
+            TASK_STATUS=$(echo "$TASK_INFO" | grep -o '"status": *"[^"]*"' | cut -d'"' -f4)
+            HEALTH_STATUS=$(echo "$TASK_INFO" | grep -o '"health": *"[^"]*"' | cut -d'"' -f4)
+            TASK_REV=$(echo "$TASK_INFO" | grep -o 'flight-deck-fargate-task:[0-9]*' | cut -d: -f2)
+            
+            # Check if this is our new revision
+            if [ "$TASK_REV" = "$NEW_REVISION" ]; then
+                NEW_REV_FOUND=true
+                CURRENT_STATE="$TASK_STATUS|$HEALTH_STATUS|$TASK_REV"
+                
+                # Only print if state changed
+                if [ "$CURRENT_STATE" != "$LAST_STATE" ]; then
+                    echo "   Status: $TASK_STATUS | Health: $HEALTH_STATUS | Revision: $TASK_REV"
+                    LAST_STATE="$CURRENT_STATE"
+                fi
+                
+                # Check if deployment is complete
+                if [ "$TASK_STATUS" = "RUNNING" ] && [ "$HEALTH_STATUS" = "HEALTHY" ]; then
+                    echo ""
+                    echo "✅ Deployment is LIVE and HEALTHY!"
+                    echo "🌐 https://flightdeck.sandsmedia.com"
+                    
+                    # macOS notification
+                    if command -v osascript &> /dev/null; then
+                        osascript -e "display notification \"Flight Deck is live and healthy at flightdeck.sandsmedia.com\" with title \"Deployment Complete ✅\" sound name \"Glass\""
+                        say "Flight Deck deployment is complete and healthy"
+                    fi
+                    
+                    exit 0
+                fi
+                break
             fi
-            
-            break
+        done
+        
+        # Only print waiting message if we haven't found the new revision yet and state changed
+        if [ "$NEW_REV_FOUND" = false ] && [ "$LAST_STATE" != "WAITING" ]; then
+            echo "   Waiting for new revision $NEW_REVISION to start..."
+            LAST_STATE="WAITING"
         fi
-    else
-        echo "   Waiting for task to start..."
     fi
     
     sleep $INTERVAL
     ELAPSED=$((ELAPSED + INTERVAL))
 done
 
-if [ $ELAPSED -ge $MAX_WAIT ]; then
-    echo ""
-    echo "⚠️  Deployment monitoring timed out after $MAX_WAIT seconds"
-    echo "   Check status manually:"
-    echo "   aws ecs describe-services --cluster flight-deck-cluster --services flight-deck-fargate-service"
-    exit 1
-fi
+echo ""
+echo "⚠️  Deployment monitoring timed out after $((MAX_WAIT / 60)) minutes"
+echo "   The deployment may still be in progress. Check status manually:"
+echo "   aws ecs describe-services --cluster flight-deck-cluster --services flight-deck-fargate-service --region eu-west-1"
+exit 1
 
 echo ""
 
