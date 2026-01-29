@@ -523,6 +523,41 @@ class FlightDeckApp {
     const modal = document.getElementById('printerModal');
     modal.style.display = 'flex';
 
+    // Check browser compatibility first
+    if (this.printer.browserInfo.isSafari) {
+      document.getElementById('printerStatus').innerHTML = `
+        <div class="browser-warning">
+          <span style="font-size: 3rem;">⚠️</span>
+          <h3>Safari Not Supported</h3>
+          <p>Web Bluetooth is not available in Safari.</p>
+          <p><strong>Please use one of these browsers:</strong></p>
+          <ul style="text-align: left; display: inline-block;">
+            <li>Google Chrome</li>
+            <li>Microsoft Edge</li>
+            <li>Opera</li>
+          </ul>
+          <p style="margin-top: 1rem;">
+            <a href="https://www.google.com/chrome/" target="_blank" class="btn btn-primary">
+              Download Chrome
+            </a>
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    if (!this.printer.browserInfo.isSupported) {
+      document.getElementById('printerStatus').innerHTML = `
+        <div class="browser-warning">
+          <span style="font-size: 3rem;">⚠️</span>
+          <h3>Browser Not Supported</h3>
+          <p>Web Bluetooth is not available in ${this.printer.browserInfo.name}.</p>
+          <p><strong>Please use Chrome, Edge, or Opera.</strong></p>
+        </div>
+      `;
+      return;
+    }
+
     // Update status
     const connected = this.printer.isConnected();
     const printerInfo = this.printer.getConnectedPrinter();

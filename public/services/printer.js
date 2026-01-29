@@ -9,14 +9,47 @@ class PrinterService {
     this.connectedPrinter = null;
     this.characteristic = null;
     this.isSupported = 'bluetooth' in navigator;
+    this.browserInfo = this.detectBrowser();
+  }
+
+  /**
+   * Detect browser type
+   */
+  detectBrowser() {
+    const ua = navigator.userAgent;
+    const isChrome = /Chrome/.test(ua) && /Google Inc/.test(navigator.vendor);
+    const isEdge = /Edg/.test(ua);
+    const isOpera = /OPR/.test(ua);
+    const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+    const isFirefox = /Firefox/.test(ua);
+
+    return {
+      name: isSafari ? 'Safari' : isEdge ? 'Edge' : isChrome ? 'Chrome' : isOpera ? 'Opera' : isFirefox ? 'Firefox' : 'Unknown',
+      isSupported: this.isSupported && (isChrome || isEdge || isOpera),
+      isSafari
+    };
   }
 
   /**
    * Check if Web Bluetooth is supported
    */
   checkSupport() {
+    if (this.browserInfo.isSafari) {
+      throw new Error(
+        '⚠️ Safari does not support Web Bluetooth.\n\n' +
+        'Please use one of these browsers:\n' +
+        '• Google Chrome\n' +
+        '• Microsoft Edge\n' +
+        '• Opera\n\n' +
+        'You can download Chrome at: https://www.google.com/chrome/'
+      );
+    }
+    
     if (!this.isSupported) {
-      throw new Error('Web Bluetooth is not supported in this browser. Please use Chrome, Edge, or Opera.');
+      throw new Error(
+        'Web Bluetooth is not supported in this browser.\n\n' +
+        'Please use Chrome, Edge, or Opera for printer connectivity.'
+      );
     }
   }
 

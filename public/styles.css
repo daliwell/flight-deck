@@ -620,6 +620,42 @@ body {
   margin: 0.25rem 0;
 }
 
+.browser-warning {
+  text-align: center;
+  padding: 2rem;
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.browser-warning h3 {
+  color: #856404;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.browser-warning p {
+  color: #856404;
+  margin: 0.5rem 0;
+}
+
+.browser-warning ul {
+  list-style: none;
+  padding: 0;
+  color: #856404;
+  font-weight: 500;
+}
+
+.browser-warning ul li {
+  margin: 0.5rem 0;
+}
+
+.browser-warning ul li:before {
+  content: "✓ ";
+  color: #28a745;
+  font-weight: bold;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .app-header {
