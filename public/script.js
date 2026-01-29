@@ -525,9 +525,8 @@ class FlightDeckApp {
 
   async showPrinterModal() {
     const modal = document.getElementById('printerModal');
-    modal.style.display = 'flex';
-
-    // Check for local bridge first
+    
+    // Check for local bridge BEFORE opening modal
     const bridge = await this.printer.checkBridge();
     
     if (bridge.available) {
@@ -554,11 +553,13 @@ class FlightDeckApp {
       
       document.getElementById('useBridgeBtn').onclick = () => this.showBridgePrinters();
       document.getElementById('useWebBluetoothBtn').onclick = () => this.showWebBluetoothUI();
-      return;
+    } else {
+      // No bridge, show normal flow
+      this.showWebBluetoothUI();
     }
-
-    // No bridge, show normal flow
-    this.showWebBluetoothUI();
+    
+    // Now open the modal with updated content
+    modal.style.display = 'flex';
   }
 
   showWebBluetoothUI() {
