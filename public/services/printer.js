@@ -61,13 +61,17 @@ class PrinterService {
     this.checkSupport();
 
     try {
-      // Request Bluetooth device with flexible filters to find Brother printers
+      // Request Bluetooth device - try with filters first for Brother printers
       const device = await navigator.bluetooth.requestDevice({
-        // Accept all devices, let user choose
-        acceptAllDevices: true,
+        filters: [
+          { namePrefix: 'QL' }, // Brother QL series
+          { name: 'QL-820NWB' }, // Specific model
+        ],
         optionalServices: [
           '000018f0-0000-1000-8000-00805f9b34fb', // Brother Printer Service
           '49535343-fe7d-4ae5-8fa9-9fafd205e455', // Generic Serial
+          '0000180a-0000-1000-8000-00805f9b34fb', // Device Information Service
+          '0000180f-0000-1000-8000-00805f9b34fb', // Battery Service
         ]
       });
 
