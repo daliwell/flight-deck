@@ -42,8 +42,8 @@ class FlightDeckApp {
     });
 
     // Printer settings
-    document.getElementById('printerSettingsBtn')?.addEventListener('click', () => {
-      this.showPrinterModal();
+    document.getElementById('printerSettingsBtn')?.addEventListener('click', async () => {
+      await this.showPrinterModal();
     });
 
     // Event selection screen
