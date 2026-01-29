@@ -115,13 +115,13 @@ class FlightDeckApp {
       const today = new Date().toISOString().split('T')[0];
 
       // Fetch courses from API
-      const queryParams = new URLSearchParams({
-        genres: genres.join(','),
-        startDateFrom: today,
-        pageSize: 100
-      });
+      // Build query string manually to ensure Edge iOS compatibility
+      const queryParams = new URLSearchParams();
+      queryParams.append('genres', genres.join(','));
+      queryParams.append('startDateFrom', today);
+      queryParams.append('pageSize', '100');
 
-      const response = await fetch(`/api/courses?${queryParams}`);
+      const response = await fetch(`/api/courses?${queryParams.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch courses');
 
       const data = await response.json();

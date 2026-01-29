@@ -32,7 +32,15 @@ router.get('/courses', requireAuth, async (req, res) => {
       pageSize = 100
     } = req.query;
 
-    const genresArray = Array.isArray(genres) ? genres : [genres];
+    // Handle genres as array, comma-separated string, or single value
+    let genresArray;
+    if (Array.isArray(genres)) {
+      genresArray = genres;
+    } else if (typeof genres === 'string' && genres.includes(',')) {
+      genresArray = genres.split(',').map(g => g.trim());
+    } else {
+      genresArray = [genres];
+    }
     
     const courses = await concordApi.getCourses({
       genres: genresArray,
