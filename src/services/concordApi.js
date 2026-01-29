@@ -97,63 +97,6 @@ class ConcordAPI {
   }
 
   /**
-   * Fetch attendees for a specific course
-   * @param {string} courseId - Course ID
-   */
-  async getAttendees(courseId) {
-    const query = `
-      query GetAttendees($courseId: ID!) {
-        privateAttendees(
-          from: "REDSYS"
-          courseId: $courseId
-        ) {
-          Attendees {
-            _id
-            courseId
-            courseIds
-            combinedCourseName
-            logo
-            localizedStartDate
-            localizedEndDate
-            type
-            types
-            attendMode
-            checkInState
-            additions {
-              duration
-              type
-            }
-            userId
-            swapCardEmail
-            supportedApps
-            firstName
-            lastName
-            days
-            dates
-            workshopNames
-            specialDayNames
-            specialDayUniqueIds
-            badgeNumber
-            badgeBarcodeUrl
-            badgeDays
-            updatedAt
-          }
-        }
-      }
-    `;
-
-    const variables = { courseId };
-
-    try {
-      const data = await this.client.request(query, variables);
-      return data.privateAttendees.Attendees;
-    } catch (error) {
-      console.error('Error fetching attendees:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Mark badge as printed (mutation to be provided later)
    * @param {string} attendeeId - Attendee ID
    */

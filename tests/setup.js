@@ -1,48 +1,21 @@
-// Global test setup
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+// Jest setup file for Flight Deck tests
+require('dotenv').config({ path: '.env.test' });
 
-// Mock environment variables for tests
+// Set test environment variables
 process.env.NODE_ENV = 'test';
-process.env.SESSION_SECRET = 'test-secret';
-process.env.PORT = '3006'; // Different port for tests
+process.env.PORT = '3006';
+process.env.SKIP_AUTH = 'true'; // Skip OAuth in tests
+process.env.SESSION_SECRET = 'test-secret-key';
 
-// Global test utilities
-global.testHelpers = {
-  createMockPoc: (overrides = {}) => ({
-    pocId: 'test-poc-123',
-    title: 'Test POC',
-    text: 'Test content',
-    schemaType: 'ARTICLE',
-    contentType: 'READ',
-    chunks: [],
-    ...overrides
-  }),
-  
-  createMockChunk: (overrides = {}) => ({
-    chunker: 'DEFAULT-1024T',
-    assessments: [],
-    ...overrides
-  }),
-  
-  createMockAssessment: (overrides = {}) => ({
-    method: 'basic-heuristics',
-    qualityScore: 0.75,
-    assessmentCost: 0,
-    updatedAt: new Date(),
-    qualityAssessments: [],
-    ...overrides
-  })
+// Mock console methods to reduce noise in tests
+global.console = {
+  ...console,
+  log: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
 };
 
-// Suppress console during tests unless explicitly needed
-if (!process.env.DEBUG_TESTS) {
-  global.console = {
-    ...console,
-    log: jest.fn(),
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn()
-  };
-}
+// Increase timeout for integration tests
+jest.setTimeout(30000);

@@ -1,11 +1,12 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# TODO: Create Flight Deck specific tests
-# Tests are currently disabled as they are for the old Semantic Chunker app
-echo "⚠️  Pre-commit tests disabled - Flight Deck tests need to be written"
-exit 0
-
 # Run all automated tests before commit (unit + frontend + integration + API)
-# echo "🧪 Running pre-commit tests..."
-# npm run test:unit && npm run test:frontend && npm run test:integration && npm run test:api
+echo "🧪 Running pre-commit tests..."
+npm run test:unit && npm run test:api
+
+# Note: Integration tests are skipped in pre-commit (require live APIs)
+# Run full test suite with: npm test
+
+# ⚠️  WARNING: Bypassing this hook with --no-verify is NOT recommended
+# GitHub Actions will enforce tests on push/PR regardless
