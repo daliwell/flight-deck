@@ -70,6 +70,7 @@ echo "✅ Production deployment initiated!"
 echo "🌐 Application will be available at: https://flightdeck.sandsmedia.com"
 echo "📦 Deployed version: ${UNIQUE_TAG}"
 echo "📋 Task definition revision: ${NEW_REVISION}"
+echo "🕐 Deployment started: $(date '+%H:%M:%S')"
 echo "⏳ Monitoring deployment progress..."
 echo ""
 
@@ -112,7 +113,7 @@ while [ $ELAPSED -lt $MAX_WAIT ]; do
                 
                 # Only print if state changed
                 if [ "$CURRENT_STATE" != "$LAST_STATE" ]; then
-                    echo "   Status: $TASK_STATUS | Health: $HEALTH_STATUS | Revision: $TASK_REV"
+                    echo "[$(date '+%H:%M:%S')] Status: $TASK_STATUS | Health: $HEALTH_STATUS | Revision: $TASK_REV"
                     LAST_STATE="$CURRENT_STATE"
                 fi
                 
@@ -120,6 +121,8 @@ while [ $ELAPSED -lt $MAX_WAIT ]; do
                 if [ "$TASK_STATUS" = "RUNNING" ] && [ "$HEALTH_STATUS" = "HEALTHY" ]; then
                     echo ""
                     echo "✅ Deployment is LIVE and HEALTHY!"
+                    echo "🕐 Completed at: $(date '+%H:%M:%S')"
+                    echo "⏱️  Total deployment time: $((ELAPSED / 60)) minutes $((ELAPSED % 60)) seconds"
                     echo "🌐 https://flightdeck.sandsmedia.com"
                     
                     # macOS notification
@@ -136,7 +139,7 @@ while [ $ELAPSED -lt $MAX_WAIT ]; do
         
         # Only print waiting message if we haven't found the new revision yet and state changed
         if [ "$NEW_REV_FOUND" = false ] && [ "$LAST_STATE" != "WAITING" ]; then
-            echo "   Waiting for new revision $NEW_REVISION to start..."
+            echo "[$(date '+%H:%M:%S')] Waiting for new revision $NEW_REVISION to start..."
             LAST_STATE="WAITING"
         fi
     fi

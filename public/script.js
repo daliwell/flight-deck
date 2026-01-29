@@ -34,9 +34,11 @@ class FlightDeckApp {
   }
 
   setupEventListeners() {
-    // Logout
-    document.getElementById('logoutBtn')?.addEventListener('click', () => {
-      window.location.href = '/auth/logout';
+    // User info button - logout on click
+    document.getElementById('userInfoBtn')?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to logout?')) {
+        window.location.href = '/auth/logout';
+      }
     });
 
     // Printer settings
