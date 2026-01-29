@@ -6,8 +6,7 @@ services:
     ports:
       - "3005:3005"
     environment:
-      - NODE_ENV=production
-      - SKIP_AUTH=true
+      - NODE_ENV=development
     env_file:
       - .env
     restart: unless-stopped

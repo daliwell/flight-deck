@@ -110,7 +110,14 @@ router.get('/google/callback',
         // Successful authentication
         const redirectTo = req.session.returnTo || '/';
         delete req.session.returnTo;
-        res.redirect(redirectTo);
+        
+        // Save session explicitly before redirect
+        req.session.save((err) => {
+            if (err) {
+                console.error('Session save error:', err);
+            }
+            res.redirect(redirectTo);
+        });
     }
 );
 

@@ -35,11 +35,13 @@ const startServer = async () => {
       secret: process.env.SESSION_SECRET || 'flight-deck-secret-key',
       resave: false,
       saveUninitialized: false,
+      proxy: true, // Trust the ALB proxy
       cookie: {
         secure: process.env.NODE_ENV === 'production', // HTTPS only in production
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        sameSite: 'lax'
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for OAuth redirects in production
+        domain: process.env.NODE_ENV === 'production' ? 'flightdeck.sandsmedia.com' : undefined
       }
     }));
 

@@ -46,7 +46,7 @@ echo "📤 Pushing to ECR..."
 docker push 151853531988.dkr.ecr.eu-west-1.amazonaws.com/flight-deck:${UNIQUE_TAG}
 docker push 151853531988.dkr.ecr.eu-west-1.amazonaws.com/flight-deck:latest
 
-echo "📝 Registering new task definition with unique image tag..."
+echo "📝 Registering new Fargate task definition with unique image tag..."
 # Create a new task definition with the unique tag (without requiring jq)
 sed 's|:latest"|:'"${UNIQUE_TAG}"'"|g' task-definition-fargate.json > /tmp/task-def-new.json
 
@@ -55,7 +55,7 @@ NEW_REVISION=$(aws ecs register-task-definition --cli-input-json file:///tmp/tas
 
 echo "✅ Registered new task definition revision: ${NEW_REVISION}"
 
-echo "🔄 Updating ECS service to use new task definition..."
+echo "🔄 Updating Fargate service to use new task definition..."
 aws ecs update-service \
     --cluster flight-deck-cluster \
     --service flight-deck-fargate-service \
