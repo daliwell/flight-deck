@@ -193,20 +193,26 @@ class PrinterService {
    */
   async checkBridge() {
     try {
+      console.log('Checking for printer bridge at:', this.bridgeUrl);
       const response = await fetch(`${this.bridgeUrl}/health`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
       
+      console.log('Bridge response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Bridge detected:', data);
         return {
           available: true,
           printer: data.printer
         };
       }
+      console.log('Bridge not available (bad response)');
       return { available: false };
     } catch (error) {
+      console.log('Bridge check failed:', error);
       return { available: false };
     }
   }
