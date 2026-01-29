@@ -1,6 +1,7 @@
 /**
  * Printer Service for Flight Deck
  * Handles Bluetooth printer connection and badge printing via Web Bluetooth API
+ * or via local printer bridge for classic Bluetooth printers
  * Supports Brother QL-820NWB and similar ESC/P printers
  */
 
@@ -10,6 +11,8 @@ class PrinterService {
     this.characteristic = null;
     this.isSupported = 'bluetooth' in navigator;
     this.browserInfo = this.detectBrowser();
+    this.useBridge = false;
+    this.bridgeUrl = 'http://localhost:8765';
   }
 
   /**
@@ -186,10 +189,116 @@ class PrinterService {
   }
 
   /**
+   * Check if local printer bridge is available
+   */
+  async checkBridge() {
+    try {
+      const response = await fetch(`${this.bridgeUrl}/health`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          available: true,
+          printer: data.printer
+        };
+      }
+      return { available: false };
+    } catch (error) {
+      return { available: false };
+    }
+  }
+
+  /**
+   * Get list of printers from bridge
+   */
+  async getBridgePrinters() {
+    const response = await fetch(`${this.bridgeUrl}/printers`);
+    if (!response.ok) {
+      throw new Error('Failed to get printer list from bridge');
+    }
+    const data = await response.json();
+    return data.printers;
+  }
+
+  /**
+   * Connect to printer via bridge
+   */
+  async connectViaBridge(printerPath) {
+    const response = await fetch(`${this.bridgeUrl}/connect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ printerPath })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to connect to printer');
+    }
+
+    const data = await response.json();
+    this.connectedPrinter = data.printer;
+    this.useBridge = true;
+    
+    // Save bridge mode
+    await flightDeckDB.saveSetting('useBridge', true);
+    await flightDeckDB.saveSetting('activePrinter', {
+      ...data.printer,
+      useBridge: true
+    });
+
+    return data.printer;
+  }
+
+  /**
+   * Disconnect from bridge printer
+   */
+  async disconnectBridge() {
+    try {
+      await fetch(`${this.bridgeUrl}/disconnect`, { method: 'POST' });
+    } catch (error) {
+      console.error('Error disconnecting from bridge:', error);
+    }
+    this.connectedPrinter = null;
+    this.useBridge = false;
+    await flightDeckDB.saveSetting('useBridge', false);
+  }
+
+  /**
+   * Print via bridge
+   */
+  async printViaBridge(attendee, options = {}) {
+    const response = await fetch(`${this.bridgeUrl}/print`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: `${attendee.firstName} ${attendee.lastName}`,
+        company: attendee.combinedCourseName || '',
+        role: attendee.badgeNumber ? `Badge: ${attendee.badgeNumber}` : '',
+        template: options.template || 'default'
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Print failed');
+    }
+
+    return await response.json();
+  }
+
+  /**
    * Print a badge
    * Generates ESC/P commands for Brother QL-820NWB
    */
   async printBadge(attendee, options = {}) {
+    // Route to bridge if enabled
+    if (this.useBridge) {
+      return await this.printViaBridge(attendee, options);
+    }
+
     const { testPrint = false } = options;
 
     // ESC/P commands for Brother QL-820NWB (62mm label)

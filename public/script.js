@@ -523,6 +523,190 @@ class FlightDeckApp {
     }
   }
 
+  async showPrinterModal() {
+    const modal = document.getElementById('printerModal');
+    modal.style.display = 'flex';
+
+    // Check for local bridge first
+    const bridge = await this.printer.checkBridge();
+    
+    if (bridge.available) {
+      // Show bridge option
+      document.getElementById('printerStatus').innerHTML = `
+        <div class="bridge-available">
+          <span style="font-size: 3rem;">🔌</span>
+          <h3>Local Printer Bridge Detected</h3>
+          <p>A local bridge is running on your computer.</p>
+          <p>This allows connecting to classic Bluetooth printers like the Brother QL-820NWB.</p>
+          ${bridge.printer.connected ? `
+            <div class="success-msg" style="margin-top: 1rem;">
+              <strong>✓ Connected:</strong> ${bridge.printer.name}
+            </div>
+          ` : ''}
+          <button id="useBridgeBtn" class="btn btn-primary" style="margin-top: 1rem;">
+            ${bridge.printer.connected ? 'View Bridge Printer' : 'Connect via Bridge'}
+          </button>
+          <button id="useWebBluetoothBtn" class="btn btn-secondary" style="margin-top: 0.5rem;">
+            Use Web Bluetooth Instead
+          </button>
+        </div>
+      `;
+      
+      document.getElementById('useBridgeBtn').onclick = () => this.showBridgePrinters();
+      document.getElementById('useWebBluetoothBtn').onclick = () => this.showWebBluetoothUI();
+      return;
+    }
+
+    // No bridge, show normal flow
+    this.showWebBluetoothUI();
+  }
+
+  showWebBluetoothUI() {
+    // Check browser compatibility first
+    if (this.printer.browserInfo.isSafari) {
+      document.getElementById('printerStatus').innerHTML = `
+        <div class="browser-warning">
+          <span style="font-size: 3rem;">⚠️</span>
+          <h3>Safari Not Supported</h3>
+          <p>Web Bluetooth is not available in Safari.</p>
+          <p><strong>Options:</strong></p>
+          <ul style="text-align: left; display: inline-block; margin-bottom: 1rem;">
+            <li>Use Chrome, Edge, or Opera</li>
+            <li>Use the Local Printer Bridge (see below)</li>
+          </ul>
+          <details style="margin-top: 1rem; text-align: left;">
+            <summary style="cursor: pointer; font-weight: bold;">ℹ️ About the Local Bridge</summary>
+            <p style="margin-top: 0.5rem;">The Brother QL-820NWB uses classic Bluetooth which doesn't work with Web Bluetooth.</p>
+            <p>Install the printer bridge on your Mac to connect:</p>
+            <ol>
+              <li>Pair printer in System Settings</li>
+              <li>Run: <code>cd printer-bridge && npm install && npm start</code></li>
+              <li>Refresh this page</li>
+            </ol>
+          </details>
+        </div>
+      `;
+      return;
+    }
+
+    if (!this.printer.browserInfo.isSupported) {
+      document.getElementById('printerStatus').innerHTML = `
+        <div class="browser-warning">
+          <span style="font-size: 3rem;">⚠️</span>
+          <h3>Browser Not Supported</h3>
+          <p>Web Bluetooth is not available in ${this.printer.browserInfo.name}.</p>
+          <p><strong>Please use Chrome, Edge, or Opera.</strong></p>
+        </div>
+      `;
+      return;
+    }
+
+    // Update status
+    const connected = this.printer.isConnected();
+    const printerInfo = this.printer.getConnectedPrinter();
+    
+    if (connected && printerInfo) {
+      this.updatePrinterStatus(printerInfo.name, true);
+    }
+
+    // Setup event listeners
+    document.getElementById('scanPrinterBtn').onclick = () => this.scanForPrinter();
+    document.getElementById('testPrinterBtn').onclick = () => this.testPrinter();
+    document.getElementById('disconnectPrinterBtn').onclick = () => this.disconnectPrinter();
+  }
+
+  async showBridgePrinters() {
+    document.getElementById('printerStatus').innerHTML = `
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading printers from bridge...</p>
+      </div>
+    `;
+
+    try {
+      const printers = await this.printer.getBridgePrinters();
+      
+      if (printers.length === 0) {
+        document.getElementById('printerStatus').innerHTML = `
+          <div class="error-state">
+            <h3>No Printers Found</h3>
+            <p>Make sure your Brother printer is:</p>
+            <ul style="text-align: left; display: inline-block;">
+              <li>Paired in System Settings > Bluetooth</li>
+              <li>Connected (blue light solid)</li>
+              <li>Turned on</li>
+            </ul>
+            <button class="btn btn-secondary" onclick="app.showBridgePrinters()">
+              🔄 Refresh
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <h3>Available Printers</h3>
+        <p>Select your Brother QL-820NWB:</p>
+        <div class="printer-list">
+      `;
+
+      printers.forEach(printer => {
+        html += `
+          <button class="printer-item" data-path="${printer.path}">
+            <strong>${printer.name}</strong>
+            ${printer.manufacturer ? `<br><small>${printer.manufacturer}</small>` : ''}
+          </button>
+        `;
+      });
+
+      html += `</div>`;
+      
+      document.getElementById('printerStatus').innerHTML = html;
+
+      // Add click handlers
+      document.querySelectorAll('.printer-item').forEach(btn => {
+        btn.onclick = async () => {
+          const path = btn.getAttribute('data-path');
+          await this.connectToBridgePrinter(path);
+        };
+      });
+    } catch (error) {
+      document.getElementById('printerStatus').innerHTML = `
+        <div class="error-state">
+          <h3>Bridge Error</h3>
+          <p>${error.message}</p>
+          <button class="btn btn-secondary" onclick="app.showPrinterModal()">
+            ← Back
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  async connectToBridgePrinter(printerPath) {
+    document.getElementById('printerStatus').innerHTML = `
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Connecting to printer...</p>
+      </div>
+    `;
+
+    try {
+      const printer = await this.printer.connectViaBridge(printerPath);
+      this.updatePrinterStatus(printer.name, true);
+    } catch (error) {
+      document.getElementById('printerStatus').innerHTML = `
+        <div class="error-state">
+          <h3>Connection Failed</h3>
+          <p>${error.message}</p>
+          <button class="btn btn-secondary" onclick="app.showBridgePrinters()">
+            ← Back
+          </button>
+        </div>
+      `;
+    }
+  }
+
   showPrinterModal() {
     const modal = document.getElementById('printerModal');
     modal.style.display = 'flex';
