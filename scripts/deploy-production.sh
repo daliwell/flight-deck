@@ -69,13 +69,73 @@ echo ""
 echo "✅ Production deployment initiated!"
 echo "🌐 Application will be available at: https://flightdeck.sandsmedia.com"
 echo "📦 Deployed version: ${UNIQUE_TAG}"
-echo "⏳ Deployment may take a few minutes to complete..."
+echo "📋 Task definition revision: ${NEW_REVISION}"
+echo "⏳ Monitoring deployment progress..."
 echo ""
-echo "🔍 To monitor deployment progress:"
-echo "   aws ecs describe-services --cluster flight-deck-cluster --services flight-deck-fargate-service --query 'services[0].deployments[0].rolloutState' --output text --no-paginate"
+
+# Monitor deployment until healthy
+MAX_WAIT=600  # 10 minutes
+INTERVAL=10
+ELAPSED=0
+
+while [ $ELAPSED -lt $MAX_WAIT ]; do
+    # Get the task ARN for the new deployment
+    TASK_ARN=$(aws ecs list-tasks \
+        --cluster flight-deck-cluster \
+        --service-name flight-deck-fargate-service \
+        --desired-status RUNNING \
+        --region eu-west-1 \
+        --query 'taskArns[0]' \
+        --output text \
+        --no-paginate 2>/dev/null)
+    
+    if [ -n "$TASK_ARN" ] && [ "$TASK_ARN" != "None" ]; then
+        # Get task details
+        TASK_INFO=$(aws ecs describe-tasks \
+            --cluster flight-deck-cluster \
+            --tasks "$TASK_ARN" \
+            --region eu-west-1 \
+            --query 'tasks[0].{status:lastStatus,health:healthStatus,revision:taskDefinitionArn}' \
+            --output json \
+            --no-paginate 2>/dev/null)
+        
+        TASK_STATUS=$(echo "$TASK_INFO" | grep -o '"status": *"[^"]*"' | cut -d'"' -f4)
+        HEALTH_STATUS=$(echo "$TASK_INFO" | grep -o '"health": *"[^"]*"' | cut -d'"' -f4)
+        TASK_REV=$(echo "$TASK_INFO" | grep -o 'flight-deck-fargate-task:[0-9]*' | cut -d: -f2)
+        
+        echo "   Status: $TASK_STATUS | Health: $HEALTH_STATUS | Revision: $TASK_REV"
+        
+        # Check if it's the correct revision and healthy
+        if [ "$TASK_REV" = "$NEW_REVISION" ] && [ "$TASK_STATUS" = "RUNNING" ] && [ "$HEALTH_STATUS" = "HEALTHY" ]; then
+            echo ""
+            echo "✅ Deployment is LIVE and HEALTHY!"
+            echo "🌐 https://flightdeck.sandsmedia.com"
+            
+            # macOS notification
+            if command -v osascript &> /dev/null; then
+                osascript -e "display notification \"Flight Deck is live and healthy at flightdeck.sandsmedia.com\" with title \"Deployment Complete ✅\" sound name \"Glass\""
+                say "Flight Deck deployment is complete and healthy"
+            fi
+            
+            break
+        fi
+    else
+        echo "   Waiting for task to start..."
+    fi
+    
+    sleep $INTERVAL
+    ELAPSED=$((ELAPSED + INTERVAL))
+done
+
+if [ $ELAPSED -ge $MAX_WAIT ]; then
+    echo ""
+    echo "⚠️  Deployment monitoring timed out after $MAX_WAIT seconds"
+    echo "   Check status manually:"
+    echo "   aws ecs describe-services --cluster flight-deck-cluster --services flight-deck-fargate-service"
+    exit 1
+fi
+
 echo ""
-echo "🏥 To check application health:"
-echo "   curl https://flightdeck.sandsmedia.com/health"
 
 echo ""
 echo "🧹 Cleaning up old task definitions..."
