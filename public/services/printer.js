@@ -18,9 +18,10 @@ class PrinterService {
   detectBrowser() {
     const ua = navigator.userAgent;
     const isChrome = /Chrome/.test(ua) && /Google Inc/.test(navigator.vendor);
-    const isEdge = /Edg/.test(ua);
+    const isEdge = /Edg/.test(ua) || /EdgiOS/.test(ua) || /Edge/.test(ua);
     const isOpera = /OPR/.test(ua);
-    const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+    // Safari check: has Safari in UA but NOT Chrome/Chromium AND NOT Edge
+    const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua) && !/Edg/.test(ua) && !/EdgiOS/.test(ua);
     const isFirefox = /Firefox/.test(ua);
 
     return {
@@ -60,12 +61,10 @@ class PrinterService {
     this.checkSupport();
 
     try {
-      // Request Bluetooth device with Serial Port Profile (SPP) service
+      // Request Bluetooth device with flexible filters to find Brother printers
       const device = await navigator.bluetooth.requestDevice({
-        filters: [
-          { services: ['000018f0-0000-1000-8000-00805f9b34fb'] }, // Brother Printer Service
-          { namePrefix: 'QL' }, // Brother QL series
-        ],
+        // Accept all devices, let user choose
+        acceptAllDevices: true,
         optionalServices: [
           '000018f0-0000-1000-8000-00805f9b34fb', // Brother Printer Service
           '49535343-fe7d-4ae5-8fa9-9fafd205e455', // Generic Serial
