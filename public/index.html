@@ -15,6 +15,9 @@
                 <span class="subtitle">Badge Printing & Attendee Management</span>
             </div>
             <div class="header-right">
+                <button id="printerSettingsBtn" class="btn btn-secondary">
+                    <span class="btn-icon">🖨️</span> Printer
+                </button>
                 <span id="userInfo" class="user-info">Loading...</span>
                 <button id="logoutBtn" class="btn btn-secondary">Logout</button>
             </div>
@@ -143,8 +146,51 @@
         </div>
     </div>
 
+    <!-- Printer Settings Modal -->
+    <div id="printerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🖨️ Printer Settings</h3>
+                <button class="modal-close" onclick="flightDeckApp.closePrinterModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="printerStatus" class="printer-status">
+                    <p class="status-text">No printer connected</p>
+                    <button id="scanPrinterBtn" class="btn btn-primary">
+                        <span class="btn-icon">🔍</span> Scan for Printers
+                    </button>
+                </div>
+                <div id="printerInfo" class="printer-info" style="display: none;">
+                    <div class="info-row">
+                        <strong>Connected Printer:</strong>
+                        <span id="printerName"></span>
+                    </div>
+                    <div class="printer-actions">
+                        <button id="testPrinterBtn" class="btn btn-secondary">
+                            <span class="btn-icon">🧪</span> Test Print
+                        </button>
+                        <button id="disconnectPrinterBtn" class="btn btn-secondary">
+                            <span class="btn-icon">🔌</span> Disconnect
+                        </button>
+                    </div>
+                </div>
+                <div class="printer-help">
+                    <p><strong>Setup Instructions:</strong></p>
+                    <ol>
+                        <li>Turn on your Brother QL-820NWB printer</li>
+                        <li>Enable Bluetooth pairing mode on the printer</li>
+                        <li>Click "Scan for Printers" and select your printer</li>
+                        <li>Test the connection with "Test Print"</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Load database service first -->
     <script src="services/db.js"></script>
+    <!-- Load printer service -->
+    <script src="services/printer.js"></script>
     <!-- Load main application -->
     <script src="script.js"></script>
 </body>

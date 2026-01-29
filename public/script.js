@@ -9,6 +9,7 @@ class FlightDeckApp {
     this.events = [];
     this.attendees = [];
     this.db = flightDeckDB;
+    this.printer = printerService;
     
     this.init();
   }
@@ -22,6 +23,9 @@ class FlightDeckApp {
     // Load user info
     await this.loadUserInfo();
     
+    // Load saved printer
+    await this.loadPrinter();
+    
     // Setup event listeners
     this.setupEventListeners();
     
@@ -33,6 +37,11 @@ class FlightDeckApp {
     // Logout
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
       window.location.href = '/auth/logout';
+    });
+
+    // Printer settings
+    document.getElementById('printerSettingsBtn')?.addEventListener('click', () => {
+      this.showPrinterModal();
     });
 
     // Event selection screen
@@ -433,8 +442,21 @@ class FlightDeckApp {
     const testPrint = document.getElementById('testPrintCheckbox').checked;
 
     try {
-      // TODO: Send to Brother printer here
+      // Check if printer is connected
+      if (!this.printer.isConnected()) {
+        const shouldConnect = confirm('No printer connected. Would you like to connect to a printer now?');
+        if (shouldConnect) {
+          this.closePrintModal();
+          this.showPrinterModal();
+          return;
+        } else {
+          throw new Error('No printer connected');
+        }
+      }
+
+      // Send to Brother printer
       console.log('Printing badge for:', attendee);
+      await this.printer.printBadge(attendee, { testPrint });
 
       if (!testPrint) {
         // Mark as printed in API
@@ -482,6 +504,109 @@ class FlightDeckApp {
   showAttendeeScreen() {
     document.getElementById('eventSelectionScreen').classList.remove('active');
     document.getElementById('attendeeScreen').classList.add('active');
+  }
+
+  // Printer Management Methods
+  async loadPrinter() {
+    try {
+      const savedPrinter = await this.printer.loadSavedPrinter();
+      if (savedPrinter) {
+        console.log('Saved printer found:', savedPrinter.name);
+        this.updatePrinterStatus(savedPrinter.name, false);
+      }
+    } catch (error) {
+      console.error('Error loading saved printer:', error);
+    }
+  }
+
+  showPrinterModal() {
+    const modal = document.getElementById('printerModal');
+    modal.style.display = 'flex';
+
+    // Update status
+    const connected = this.printer.isConnected();
+    const printerInfo = this.printer.getConnectedPrinter();
+    
+    if (connected && printerInfo) {
+      this.updatePrinterStatus(printerInfo.name, true);
+    }
+
+    // Setup event listeners
+    document.getElementById('scanPrinterBtn').onclick = () => this.scanForPrinter();
+    document.getElementById('testPrinterBtn').onclick = () => this.testPrinter();
+    document.getElementById('disconnectPrinterBtn').onclick = () => this.disconnectPrinter();
+  }
+
+  closePrinterModal() {
+    document.getElementById('printerModal').style.display = 'none';
+  }
+
+  updatePrinterStatus(printerName, isConnected) {
+    const statusDiv = document.getElementById('printerStatus');
+    const infoDiv = document.getElementById('printerInfo');
+    const printerNameSpan = document.getElementById('printerName');
+
+    if (isConnected) {
+      statusDiv.style.display = 'none';
+      infoDiv.style.display = 'block';
+      printerNameSpan.textContent = printerName;
+    } else {
+      statusDiv.style.display = 'block';
+      infoDiv.style.display = 'none';
+      statusDiv.querySelector('.status-text').textContent = printerName ? 
+        `Last connected: ${printerName} (disconnected)` : 
+        'No printer connected';
+    }
+  }
+
+  async scanForPrinter() {
+    try {
+      const btn = document.getElementById('scanPrinterBtn');
+      btn.disabled = true;
+      btn.textContent = 'Scanning...';
+
+      const device = await this.printer.scanForPrinters();
+      const connectedPrinter = await this.printer.connectToPrinter(device);
+      
+      this.updatePrinterStatus(connectedPrinter.name, true);
+      alert(`Successfully connected to ${connectedPrinter.name}`);
+    } catch (error) {
+      console.error('Error scanning for printers:', error);
+      alert('Error: ' + error.message);
+    } finally {
+      const btn = document.getElementById('scanPrinterBtn');
+      btn.disabled = false;
+      btn.innerHTML = '<span class="btn-icon">🔍</span> Scan for Printers';
+    }
+  }
+
+  async testPrinter() {
+    try {
+      const btn = document.getElementById('testPrinterBtn');
+      btn.disabled = true;
+      btn.textContent = 'Printing...';
+
+      await this.printer.testPrint();
+      alert('Test print sent successfully!');
+    } catch (error) {
+      console.error('Test print failed:', error);
+      alert('Test print failed: ' + error.message);
+    } finally {
+      const btn = document.getElementById('testPrinterBtn');
+      btn.disabled = false;
+      btn.innerHTML = '<span class="btn-icon">🧪</span> Test Print';
+    }
+  }
+
+  async disconnectPrinter() {
+    try {
+      await this.printer.disconnect();
+      this.updatePrinterStatus(null, false);
+      alert('Printer disconnected');
+    } catch (error) {
+      console.error('Error disconnecting printer:', error);
+      alert('Error disconnecting: ' + error.message);
+    }
   }
 
   formatDate(dateString) {
