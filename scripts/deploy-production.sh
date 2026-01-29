@@ -87,7 +87,10 @@ TOTAL_REVISIONS=$(echo "$ALL_REVISIONS" | wc -l | tr -d ' ')
 
 if [ "$TOTAL_REVISIONS" -gt 5 ]; then
     # Keep only the 5 most recent revisions, deregister the rest
-    REVISIONS_TO_DELETE=$(echo "$ALL_REVISIONS" | head -n -5)
+    # Use tail to skip last 5, compatible with both Linux and macOS
+    KEEP_COUNT=5
+    DELETE_COUNT=$((TOTAL_REVISIONS - KEEP_COUNT))
+    REVISIONS_TO_DELETE=$(echo "$ALL_REVISIONS" | head -n $DELETE_COUNT)
     
     DELETED_COUNT=0
     for REVISION_ARN in $REVISIONS_TO_DELETE; do
