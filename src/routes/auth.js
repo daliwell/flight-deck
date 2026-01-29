@@ -39,6 +39,14 @@ router.get('/login', (req, res) => {
                     font-weight: bold;
                     color: #333;
                     margin-bottom: 0.5rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.75rem;
+                }
+                .logo img {
+                    height: 2.5rem;
+                    width: auto;
                 }
                 .subtitle {
                     color: #666;
@@ -76,7 +84,7 @@ router.get('/login', (req, res) => {
         </head>
         <body>
             <div class="login-container">
-                <div class="logo">✈️ Flight Deck</div>
+                <div class="logo">Flight Deck <img src="/flight.svg" alt="Flight Deck"></div>
                 <div class="subtitle">Conference Management Platform</div>
                 
                 <a href="/auth/google" class="google-btn">
