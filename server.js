@@ -63,6 +63,11 @@ const startServer = async () => {
       });
     });
 
+    // Serve SVG logo without authentication (needed for login page)
+    app.get('/flight.svg', (req, res) => {
+      res.sendFile(path.join(__dirname, 'public', 'flight.svg'));
+    });
+
     // Protect all static files and routes with authentication
     // In development mode with SKIP_AUTH=true, bypass authentication
     if (process.env.SKIP_AUTH !== 'true') {
