@@ -530,32 +530,51 @@ class FlightDeckApp {
     const bridge = await this.printer.checkBridge();
     
     if (bridge.available) {
-      // Show bridge option
+      // Bridge is running - show connection options
       document.getElementById('printerStatus').innerHTML = `
         <div class="bridge-available">
           <span style="font-size: 3rem;">🔌</span>
-          <h3>Local Printer Bridge Detected</h3>
-          <p>A local bridge is running on your computer.</p>
-          <p>This allows connecting to classic Bluetooth printers like the Brother QL-820NWB.</p>
+          <h3>Printer Bridge Ready</h3>
+          <p>The local bridge is running and ready to connect to your Brother QL-820NWB.</p>
           ${bridge.printer.connected ? `
             <div class="success-msg" style="margin-top: 1rem;">
               <strong>✓ Connected:</strong> ${bridge.printer.name}
             </div>
           ` : ''}
           <button id="useBridgeBtn" class="btn btn-primary" style="margin-top: 1rem;">
-            ${bridge.printer.connected ? 'View Bridge Printer' : 'Connect via Bridge'}
-          </button>
-          <button id="useWebBluetoothBtn" class="btn btn-secondary" style="margin-top: 0.5rem;">
-            Use Web Bluetooth Instead
+            ${bridge.printer.connected ? 'Manage Printer' : 'Connect to Printer'}
           </button>
         </div>
       `;
       
       document.getElementById('useBridgeBtn').onclick = () => this.showBridgePrinters();
-      document.getElementById('useWebBluetoothBtn').onclick = () => this.showWebBluetoothUI();
     } else {
-      // No bridge, show normal flow
-      this.showWebBluetoothUI();
+      // Bridge not running - show setup instructions
+      document.getElementById('printerStatus').innerHTML = `
+        <div class="browser-warning">
+          <span style="font-size: 3rem;">⚠️</span>
+          <h3>Printer Bridge Not Running</h3>
+          <p>The Brother QL-820NWB requires a local bridge to connect.</p>
+          
+          <details style="margin-top: 1rem; text-align: left; background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 6px;">
+            <summary style="cursor: pointer; font-weight: bold; margin-bottom: 0.5rem;">📋 Setup Instructions</summary>
+            <ol style="margin: 0.5rem 0 0 1.5rem; line-height: 1.8;">
+              <li>Pair printer in <strong>System Settings → Bluetooth</strong></li>
+              <li>Open Terminal and run:
+                <pre style="background: rgba(0,0,0,0.3); padding: 0.5rem; margin: 0.5rem 0; border-radius: 4px; overflow-x: auto;"><code>cd printer-bridge
+npm install
+npm start</code></pre>
+              </li>
+              <li>Keep the terminal running</li>
+              <li>Refresh this page</li>
+            </ol>
+          </details>
+          
+          <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+            Bridge runs on <code>http://localhost:8765</code>
+          </p>
+        </div>
+      `;
     }
     
     // Now open the modal with updated content
